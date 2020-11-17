@@ -1,0 +1,14 @@
+.diagram-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: url(^diagram_bg.png);
+  background-size: 10px 10px;
+  overflow: hidden;
+  cursor: move;
+  &:focus {
+    outline: none;
+  }
+}
