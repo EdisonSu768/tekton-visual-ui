@@ -1,28 +1,29 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import * as go from 'gojs';
 
-
 @Component({
   selector: 'app-inspector',
   templateUrl: 'component.html',
-  styleUrls: ['component.scss']
+  styleUrls: ['component.scss'],
 })
 export class InspectorComponent {
-
-  public _selectedNode: go.Node;
-  public data = {
+  _selectedNode: go.Node;
+  data = {
     key: null,
-    color: null
+    color: null,
   };
 
   @Input()
-  public model: go.Model;
+  model: go.Model;
 
   @Output()
-  public onFormChange: EventEmitter<any> = new EventEmitter<any>();
+  onFormChange: EventEmitter<any> = new EventEmitter<any>();
 
   @Input()
-  get selectedNode() { return this._selectedNode; }
+  get selectedNode() {
+    return this._selectedNode;
+  }
+
   set selectedNode(node: go.Node) {
     if (node) {
       this._selectedNode = node;
@@ -35,10 +36,7 @@ export class InspectorComponent {
     }
   }
 
-  constructor() { }
-
-  public onCommitForm() {
+  onCommitForm() {
     this.onFormChange.emit(this.data);
   }
-
 }

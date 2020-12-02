@@ -49,5 +49,10 @@
   "eslintConfig": {
     "extends": "@1stg/eslint-config/loose"
   },
-  "prettier": "@1stg/prettier-config/semi/angular"
+  "prettier": "@1stg/prettier-config/semi/angular",
+  "remarkConfig": {
+    "plugins": [
+      "@1stg/remark-config"
+    ]
+  }
 }
