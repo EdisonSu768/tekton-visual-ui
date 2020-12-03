@@ -1,23 +1,31 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  EventEmitter,
+  Input,
+  Output,
+} from '@angular/core';
 import * as go from 'gojs';
+import { Key, ObjectData } from 'gojs';
 
 @Component({
-  selector: 'app-inspector',
+  selector: 'gojs-inspector',
   templateUrl: 'component.html',
   styleUrls: ['component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class InspectorComponent {
   _selectedNode: go.Node;
-  data = {
-    key: null,
-    color: null,
+  data: {
+    key: Key;
+    color: string;
   };
 
   @Input()
   model: go.Model;
 
   @Output()
-  onFormChange: EventEmitter<any> = new EventEmitter<any>();
+  formChange = new EventEmitter<ObjectData>();
 
   @Input()
   get selectedNode() {
@@ -37,6 +45,6 @@ export class InspectorComponent {
   }
 
   onCommitForm() {
-    this.onFormChange.emit(this.data);
+    this.formChange.emit(this.data);
   }
 }

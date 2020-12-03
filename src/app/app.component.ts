@@ -1,31 +1,27 @@
 import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
   ViewChild,
   ViewEncapsulation,
 } from '@angular/core';
 import * as go from 'gojs';
-import {
-  DataSyncService,
-  DiagramComponent,
-  PaletteComponent,
-} from 'gojs-angular';
+import { ObjectData } from 'gojs';
+import { DataSyncService, DiagramComponent } from 'gojs-angular';
 import { cloneDeep } from 'lodash-es';
 
 @Component({
-  selector: 'app-root',
+  selector: 'gojs-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
   encapsulation: ViewEncapsulation.None,
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class AppComponent {
+export class AppComponent implements AfterViewInit {
   @ViewChild('myDiagram', { static: true })
   myDiagramComponent: DiagramComponent;
 
-  @ViewChild('myPalette', { static: true })
-  myPaletteComponent: PaletteComponent;
-
-  // initialize diagram / templates
   initDiagram(): go.Diagram {
     const $ = go.GraphObject.make;
     const dia = $(go.Diagram, {
@@ -38,7 +34,7 @@ export class AppComponent {
     });
     dia.commandHandler.archetypeGroupData = { key: 'Group', isGroup: true };
 
-    const makePort = function (id: string, spot: go.Spot) {
+    const makePort = (id: string, spot: go.Spot) => {
       return $(go.Shape, 'Circle', {
         opacity: 0.5,
         fill: 'gray',
@@ -62,13 +58,15 @@ export class AppComponent {
             'ContextMenuButton',
             $(go.TextBlock, 'Group'),
             {
-              click: function (e, _obj) {
+              click: (e, _obj) => {
                 e.diagram.commandHandler.groupSelection();
               },
             },
-            new go.Binding('visible', '', function (o) {
-              return o.diagram.selection.count > 1;
-            }).ofObject(),
+            new go.Binding(
+              'visible',
+              '',
+              o => o.diagram.selection.count > 1,
+            ).ofObject(),
           ),
         ),
       },
@@ -109,11 +107,11 @@ export class AppComponent {
   ];
 
   diagramDivClassName = 'myDiagramDiv';
-  diagramModelData = { prop: 'value' };
+  diagramModelData: ObjectData = { prop: 'value' };
   skipsDiagramUpdate = false;
 
   // When the diagram model changes, update app data to reflect those changes
-  diagramModelChange = function (changes: go.IncrementalData) {
+  diagramModelChange = (changes: go.IncrementalData) => {
     // when setting state here, be sure to set skipsDiagramUpdate: true since GoJS already has this update
     // (since this is a GoJS model changed listener event function)
     // this way, we don't log an unneeded transaction in the Diagram's undoManager history
@@ -133,88 +131,19 @@ export class AppComponent {
     );
   };
 
-  initPalette(): go.Palette {
-    const $ = go.GraphObject.make;
-    const palette = $(go.Palette);
-
-    // define the Node template
-    palette.nodeTemplate = $(
-      go.Node,
-      'Auto',
-      $(
-        go.Shape,
-        'RoundedRectangle',
-        {
-          stroke: null,
-        },
-        new go.Binding('fill', 'color'),
-      ),
-      $(go.TextBlock, { margin: 8 }, new go.Binding('text', 'key')),
-    );
-
-    palette.model = $(go.GraphLinksModel, {
-      linkKeyProperty: 'key', // IMPORTANT! must be defined for merges and data sync when using GraphLinksModel
-    });
-    return palette;
-  }
-
-  paletteNodeData: go.ObjectData[] = [
-    { key: 'PaletteNode1', color: 'firebrick' },
-    { key: 'PaletteNode2', color: 'blueviolet' },
-  ];
-
-  paletteLinkData: go.ObjectData[] = [
-    { from: 'PaletteNode1', to: 'PaletteNode2' },
-  ];
-
-  paletteModelData = { prop: 'val' };
-  paletteDivClassName = 'myPaletteDiv';
-  skipsPaletteUpdate = false;
-  paletteModelChange = function (changes: go.IncrementalData) {
-    // when setting state here, be sure to set skipsPaletteUpdate: true since GoJS already has this update
-    // (since this is a GoJS model changed listener event function)
-    // this way, we don't log an unneeded transaction in the Palette's undoManager history
-    this.skipsPaletteUpdate = true;
-
-    this.paletteNodeData = DataSyncService.syncNodeData(
-      changes,
-      this.paletteNodeData,
-    );
-    this.paletteLinkData = DataSyncService.syncLinkData(
-      changes,
-      this.paletteLinkData,
-    );
-    this.paletteModelData = DataSyncService.syncModelData(
-      changes,
-      this.paletteModelData,
-    );
-  };
-
   constructor(private readonly cdr: ChangeDetectorRef) {}
-
-  // Overview Component testing
-  oDivClassName = 'myOverviewDiv';
-  initOverview(): go.Overview {
-    const $ = go.GraphObject.make;
-    return $(go.Overview);
-  }
-
-  observedDiagram = null;
 
   // currently selected node; for inspector
   selectedNode: go.Node | null = null;
 
   ngAfterViewInit() {
-    if (this.observedDiagram) return;
-    this.observedDiagram = this.myDiagramComponent.diagram;
     this.cdr.detectChanges(); // IMPORTANT: without this, Angular will throw ExpressionChangedAfterItHasBeenCheckedError (dev mode only)
-
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const appComp: AppComponent = this;
     // listener for inspector
     this.myDiagramComponent.diagram.addDiagramListener(
       'ChangedSelection',
-      function (e) {
+      e => {
         if (e.diagram.selection.count === 0) {
           appComp.selectedNode = null;
         }
@@ -228,7 +157,7 @@ export class AppComponent {
     );
   } // end ngAfterViewInit
 
-  handleInspectorChange(newNodeData) {
+  handleInspectorChange(newNodeData: ObjectData) {
     const key = newNodeData.key;
     // find the entry in nodeDataArray with this key, replace it with newNodeData
     let index = null;

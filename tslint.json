@@ -1,16 +1,10 @@
 {
   "extends": ["@1stg/tslint-config/angular", "@1stg/tslint-config/eslint"],
   "rules": {
-//    "component-selector": [true, "element", "alo", "kebab-case"],
-    "deprecation": {
-      "severity": "warning"
-    },
-//    "directive-selector": [true, "attribute", "alo", "camelCase"],
-    "parameters-max-number": false,
-    "max-union-size": false,
-    "ordered-imports": false
+    "component-selector": [true, "element", "gojs", "kebab-case"],
+    "directive-selector": [true, "attribute", "gojs", "camelCase"]
   },
   "linterOptions": {
-    "exclude": ["node_modules/**"]
+    "exclude": ["node_modules/**", "dist/**"]
   }
 }
