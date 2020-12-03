@@ -5,6 +5,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { GojsAngularModule } from 'gojs-angular';
 
 import { ApiModule } from 'app/api/api.module';
+import { SharedModule } from 'app/shared/shared.module';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -19,6 +20,7 @@ import { InspectorComponent } from './inspector/component';
     GojsAngularModule,
     AppRoutingModule,
     ApiModule,
+    SharedModule,
   ],
   providers: [],
   bootstrap: [AppComponent],

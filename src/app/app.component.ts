@@ -9,7 +9,7 @@ import {
 import * as go from 'gojs';
 import { ObjectData } from 'gojs';
 import { DataSyncService, DiagramComponent } from 'gojs-angular';
-import { cloneDeep } from 'lodash-es';
+import { cloneDeep, first } from 'lodash-es';
 
 import { ApiService } from 'app/api/api.service';
 
@@ -93,20 +93,32 @@ export class AppComponent implements AfterViewInit {
     return dia;
   }
 
-  diagramNodeData: go.ObjectData[] = [
-    { key: 'Alpha', color: 'lightblue', arr: [1, 2] },
-    { key: 'Beta', color: 'orange' },
-    { key: 'Gamma', color: 'lightgreen' },
-    { key: 'Delta', color: 'pink' },
-  ];
+  diagramNodeData: go.ObjectData[] = [];
 
-  diagramLinkData: go.ObjectData[] = [
-    { key: -1, from: 'Alpha', to: 'Beta', fromPort: 'r', toPort: '1' },
-    { key: -2, from: 'Alpha', to: 'Gamma', fromPort: 'b', toPort: 't' },
-    { key: -3, from: 'Beta', to: 'Beta' },
-    { key: -4, from: 'Gamma', to: 'Delta', fromPort: 'r', toPort: 'l' },
-    { key: -5, from: 'Delta', to: 'Alpha', fromPort: 't', toPort: 'r' },
-  ];
+  diagramLinkData: go.ObjectData[] = [];
+
+  handleTasksToNodeData = (tasks: any[]): go.ObjectData[] => {
+    this.diagramNodeData = tasks?.map((task: any) => {
+      return {
+        key: task?.name,
+        color: 'lightblue',
+      };
+    });
+    return this.diagramNodeData;
+  };
+
+  handleTasksToLinkData = (tasks: any[]): go.ObjectData[] => {
+    this.diagramLinkData = tasks?.map((task: any, index) => {
+      return {
+        key: index,
+        from: first(task?.runAfter),
+        to: task?.name,
+        fromPort: 'r',
+        toPort: 'l',
+      };
+    });
+    return this.diagramLinkData;
+  };
 
   diagramDivClassName = 'myDiagramDiv';
   diagramModelData: ObjectData = { prop: 'value' };

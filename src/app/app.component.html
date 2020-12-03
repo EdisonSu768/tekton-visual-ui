@@ -5,44 +5,19 @@
   <gojs-diagram
     #myDiagram
     [initDiagram]="initDiagram"
-    [nodeDataArray]="diagramNodeData"
-    [linkDataArray]="diagramLinkData"
+    [nodeDataArray]="pipeline?.tasks | pure: handleTasksToNodeData"
+    [linkDataArray]="pipeline?.tasks | pure: handleTasksToLinkData"
     [divClassName]="diagramDivClassName"
     [modelData]="diagramModelData"
     [skipsDiagramUpdate]="skipsDiagramUpdate"
     (modelChange)="diagramModelChange($event)"
   >
   </gojs-diagram>
-</div>
 
-<div class="left">
-  <gojs-inspector
-    [selectedNode]="selectedNode"
-    (formChange)="handleInspectorChange($event)"
-  ></gojs-inspector>
-</div>
-
-<div class="clear left box">
-  <h3>Links in app data</h3>
-  <ul>
-    <li *ngFor="let ld of diagramLinkData">
-      Link Key: {{ ld.key }}, To: {{ ld.to }}, From: {{ ld.from }}
-    </li>
-  </ul>
-</div>
-
-<div class="left box">
-  <h3>Nodes in app data</h3>
-  <ul>
-    <li *ngFor="let nd of diagramNodeData">
-      Node Key: {{ nd.key }}, Color: {{ nd.color }}
-    </li>
-  </ul>
-</div>
-
-<div class="clear left">
-  <p>
-    Notice how when a Node or Link is removed or added to the Diagram, the Nodes
-    and Links the top-level App Component has update accordingly.
-  </p>
+  <div class="left">
+    <gojs-inspector
+      [selectedNode]="selectedNode"
+      (formChange)="handleInspectorChange($event)"
+    ></gojs-inspector>
+  </div>
 </div>
