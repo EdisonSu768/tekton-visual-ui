@@ -137,7 +137,6 @@ export class AppComponent implements AfterViewInit {
   selectedNode: go.Node | null = null;
 
   ngAfterViewInit() {
-    this.cdr.detectChanges(); // IMPORTANT: without this, Angular will throw ExpressionChangedAfterItHasBeenCheckedError (dev mode only)
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const appComp: AppComponent = this;
     // listener for inspector
@@ -150,6 +149,7 @@ export class AppComponent implements AfterViewInit {
         const node = e.diagram.selection.first();
         if (node instanceof go.Node) {
           appComp.selectedNode = node;
+          this.cdr.markForCheck();
         } else {
           appComp.selectedNode = null;
         }

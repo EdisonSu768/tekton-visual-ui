@@ -6,7 +6,7 @@ import {
   Output,
 } from '@angular/core';
 import * as go from 'gojs';
-import { Key, ObjectData } from 'gojs';
+import { ObjectData } from 'gojs';
 
 @Component({
   selector: 'gojs-inspector',
@@ -16,9 +16,9 @@ import { Key, ObjectData } from 'gojs';
 })
 export class InspectorComponent {
   _selectedNode: go.Node;
-  data: {
-    key: Key;
-    color: string;
+  data: ObjectData = {
+    key: null,
+    color: null,
   };
 
   @Input()
