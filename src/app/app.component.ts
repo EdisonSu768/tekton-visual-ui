@@ -11,6 +11,8 @@ import { ObjectData } from 'gojs';
 import { DataSyncService, DiagramComponent } from 'gojs-angular';
 import { cloneDeep } from 'lodash-es';
 
+import { ApiService } from 'app/api/api.service';
+
 @Component({
   selector: 'gojs-root',
   templateUrl: './app.component.html',
@@ -131,7 +133,12 @@ export class AppComponent implements AfterViewInit {
     );
   };
 
-  constructor(private readonly cdr: ChangeDetectorRef) {}
+  pipeline$ = this.api.getTektonPipelineByNamespace('default');
+
+  constructor(
+    private readonly cdr: ChangeDetectorRef,
+    private readonly api: ApiService,
+  ) {}
 
   // currently selected node; for inspector
   selectedNode: go.Node | null = null;
@@ -140,7 +147,7 @@ export class AppComponent implements AfterViewInit {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const appComp: AppComponent = this;
     // listener for inspector
-    this.myDiagramComponent.diagram.addDiagramListener(
+    this.myDiagramComponent?.diagram.addDiagramListener(
       'ChangedSelection',
       e => {
         if (e.diagram.selection.count === 0) {
@@ -155,7 +162,7 @@ export class AppComponent implements AfterViewInit {
         }
       },
     );
-  } // end ngAfterViewInit
+  }
 
   handleInspectorChange(newNodeData: ObjectData) {
     const key = newNodeData.key;

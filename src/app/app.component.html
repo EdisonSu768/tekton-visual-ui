@@ -1,6 +1,6 @@
 <h1>GoJS / Angular - Components Sample</h1>
 
-<div class="left">
+<div class="left" *ngIf="pipeline$ | async as pipeline">
   Diagram
   <gojs-diagram
     #myDiagram

@@ -6,7 +6,7 @@
     "build": "ng build",
     "lint": "ng lint",
     "ng": "ng",
-    "start": "ng serve"
+    "start": "ng serve --proxy-config proxy.conf.json"
   },
   "dependencies": {
     "@angular/animations": "~11.0.0",
