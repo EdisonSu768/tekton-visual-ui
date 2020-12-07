@@ -1,5 +1,4 @@
 import {
-  AfterViewInit,
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
@@ -10,6 +9,7 @@ import * as go from 'gojs';
 import { ObjectData } from 'gojs';
 import { DataSyncService, DiagramComponent } from 'gojs-angular';
 import { cloneDeep, first } from 'lodash-es';
+import { tap } from 'rxjs/operators';
 
 import { ApiService } from 'app/api/api.service';
 
@@ -20,9 +20,44 @@ import { ApiService } from 'app/api/api.service';
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class AppComponent implements AfterViewInit {
-  @ViewChild('myDiagram', { static: true })
+export class AppComponent {
+  @ViewChild('myDiagram', { static: false })
   myDiagramComponent: DiagramComponent;
+
+  diagramNodeData: go.ObjectData[] = [];
+  diagramLinkData: go.ObjectData[] = [];
+  // currently selected node; for inspector
+  selectedNode: go.Node | null = null;
+  diagramDivClassName = 'myDiagramDiv';
+  diagramModelData: ObjectData = { prop: 'value' };
+  skipsDiagramUpdate = false;
+
+  pipeline$ = this.api.getTektonPipelineByNamespace('default').pipe(
+    tap(() => {
+      setTimeout(() => {
+        this.myDiagramComponent?.diagram.addDiagramListener(
+          'ChangedSelection',
+          e => {
+            if (e.diagram.selection.count === 0) {
+              this.selectedNode = null;
+            }
+            const node = e.diagram.selection.first();
+            if (node instanceof go.Node) {
+              this.selectedNode = node;
+              this.cdr.markForCheck();
+            } else {
+              this.selectedNode = null;
+            }
+          },
+        );
+      });
+    }),
+  );
+
+  constructor(
+    private readonly cdr: ChangeDetectorRef,
+    private readonly api: ApiService,
+  ) {}
 
   initDiagram(): go.Diagram {
     const $ = go.GraphObject.make;
@@ -93,10 +128,6 @@ export class AppComponent implements AfterViewInit {
     return dia;
   }
 
-  diagramNodeData: go.ObjectData[] = [];
-
-  diagramLinkData: go.ObjectData[] = [];
-
   handleTasksToNodeData = (tasks: any[]): go.ObjectData[] => {
     this.diagramNodeData = tasks?.map((task: any) => {
       return {
@@ -120,9 +151,23 @@ export class AppComponent implements AfterViewInit {
     return this.diagramLinkData;
   };
 
-  diagramDivClassName = 'myDiagramDiv';
-  diagramModelData: ObjectData = { prop: 'value' };
-  skipsDiagramUpdate = false;
+  handleInspectorChange(newNodeData: ObjectData) {
+    const key = newNodeData.key;
+    // find the entry in nodeDataArray with this key, replace it with newNodeData
+    let index = null;
+    for (let i = 0; i < this.diagramNodeData.length; i++) {
+      const entry = this.diagramNodeData[i];
+      if (entry.key && entry.key === key) {
+        index = i;
+      }
+    }
+
+    if (index >= 0) {
+      // here, we set skipsDiagramUpdate to false, since GoJS does not yet have this update
+      this.skipsDiagramUpdate = false;
+      this.diagramNodeData[index] = cloneDeep(newNodeData);
+    }
+  }
 
   // When the diagram model changes, update app data to reflect those changes
   diagramModelChange = (changes: go.IncrementalData) => {
@@ -144,53 +189,4 @@ export class AppComponent implements AfterViewInit {
       this.diagramModelData,
     );
   };
-
-  pipeline$ = this.api.getTektonPipelineByNamespace('default');
-
-  constructor(
-    private readonly cdr: ChangeDetectorRef,
-    private readonly api: ApiService,
-  ) {}
-
-  // currently selected node; for inspector
-  selectedNode: go.Node | null = null;
-
-  ngAfterViewInit() {
-    // eslint-disable-next-line @typescript-eslint/no-this-alias
-    const appComp: AppComponent = this;
-    // listener for inspector
-    this.myDiagramComponent?.diagram.addDiagramListener(
-      'ChangedSelection',
-      e => {
-        if (e.diagram.selection.count === 0) {
-          appComp.selectedNode = null;
-        }
-        const node = e.diagram.selection.first();
-        if (node instanceof go.Node) {
-          appComp.selectedNode = node;
-          this.cdr.markForCheck();
-        } else {
-          appComp.selectedNode = null;
-        }
-      },
-    );
-  }
-
-  handleInspectorChange(newNodeData: ObjectData) {
-    const key = newNodeData.key;
-    // find the entry in nodeDataArray with this key, replace it with newNodeData
-    let index = null;
-    for (let i = 0; i < this.diagramNodeData.length; i++) {
-      const entry = this.diagramNodeData[i];
-      if (entry.key && entry.key === key) {
-        index = i;
-      }
-    }
-
-    if (index >= 0) {
-      // here, we set skipsDiagramUpdate to false, since GoJS does not yet have this update
-      this.skipsDiagramUpdate = false;
-      this.diagramNodeData[index] = cloneDeep(newNodeData);
-    }
-  }
 }
