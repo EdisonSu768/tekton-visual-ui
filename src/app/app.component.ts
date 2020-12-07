@@ -24,12 +24,11 @@ export class AppComponent {
   @ViewChild('myDiagram', { static: false })
   myDiagramComponent: DiagramComponent;
 
+  diagramDivClassName = 'myDiagramDiv';
   diagramNodeData: go.ObjectData[] = [];
   diagramLinkData: go.ObjectData[] = [];
-  // currently selected node; for inspector
-  selectedNode: go.Node | null = null;
-  diagramDivClassName = 'myDiagramDiv';
   diagramModelData: ObjectData = { prop: 'value' };
+  selectedNode: go.Node | null = null; // currently selected node; for inspector
   skipsDiagramUpdate = false;
 
   pipeline$ = this.api.getTektonPipelineByNamespace('default').pipe(
@@ -69,7 +68,6 @@ export class AppComponent {
         linkKeyProperty: 'key', // IMPORTANT! must be defined for merges and data sync when using GraphLinksModel
       }),
     });
-    dia.commandHandler.archetypeGroupData = { key: 'Group', isGroup: true };
 
     const makePort = (id: string, spot: go.Spot) => {
       return $(go.Shape, 'Circle', {
@@ -88,25 +86,6 @@ export class AppComponent {
     dia.nodeTemplate = $(
       go.Node,
       'Spot',
-      {
-        contextMenu: $(
-          'ContextMenu',
-          $(
-            'ContextMenuButton',
-            $(go.TextBlock, 'Group'),
-            {
-              click: (e, _obj) => {
-                e.diagram.commandHandler.groupSelection();
-              },
-            },
-            new go.Binding(
-              'visible',
-              '',
-              o => o.diagram.selection.count > 1,
-            ).ofObject(),
-          ),
-        ),
-      },
       $(
         go.Panel,
         'Auto',
@@ -119,10 +98,8 @@ export class AppComponent {
         $(go.TextBlock, { margin: 8 }, new go.Binding('text', 'key')),
       ),
       // Ports
-      makePort('t', go.Spot.TopCenter),
       makePort('l', go.Spot.Left),
       makePort('r', go.Spot.Right),
-      makePort('b', go.Spot.BottomCenter),
     );
 
     return dia;
