@@ -2,17 +2,19 @@
 
 <div class="left" *ngIf="pipeline$ | async as pipeline">
   Diagram
-  <gojs-diagram
-    #myDiagram
-    [initDiagram]="initDiagram"
-    [nodeDataArray]="pipeline?.tasks | pure: handleTasksToNodeData"
-    [linkDataArray]="pipeline?.tasks | pure: handleTasksToLinkData"
-    [divClassName]="diagramDivClassName"
-    [modelData]="diagramModelData"
-    [skipsDiagramUpdate]="skipsDiagramUpdate"
-    (modelChange)="diagramModelChange($event)"
-  >
-  </gojs-diagram>
+  <ng-container *ngIf="taskRun$ | async as taskRun">
+    <gojs-diagram
+      #myDiagram
+      [initDiagram]="initDiagram"
+      [nodeDataArray]="pipeline?.tasks | pure: handleTasksToNodeData:taskRun"
+      [linkDataArray]="pipeline?.tasks | pure: handleTasksToLinkData:taskRun"
+      [divClassName]="diagramDivClassName"
+      [modelData]="diagramModelData"
+      [skipsDiagramUpdate]="skipsDiagramUpdate"
+      (modelChange)="diagramModelChange($event)"
+    >
+    </gojs-diagram>
+  </ng-container>
 
   <div class="left">
     <gojs-inspector

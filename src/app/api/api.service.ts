@@ -11,18 +11,46 @@ export class ApiService {
 
   constructor(private readonly http: HttpClient) {}
 
+  headers = new HttpHeaders({
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${token}`,
+  });
+
   getTektonPipelineByNamespace(namespace: string) {
-    const headers = new HttpHeaders({
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-    });
     return this.http
       .get(`${ApiService.TEKTON_API}/namespaces/${namespace}/pipelines`, {
-        headers: headers,
+        headers: this.headers,
       })
       .pipe(
         map((pipelines: any) => {
           return pipelines?.items[0]?.spec;
+        }),
+      );
+  }
+
+  getTektonPipelineRunByNamespace(namespace: string) {
+    return this.http
+      .get(`${ApiService.TEKTON_API}/namespaces/${namespace}/pipelineruns`, {
+        headers: this.headers,
+      })
+      .pipe(
+        map((pipelineRuns: any) => {
+          return pipelineRuns?.items;
+        }),
+      );
+  }
+
+  getTektonTaskRunByPipelineRun(pipelineRun: string, namespace: string) {
+    return this.http
+      .get(`${ApiService.TEKTON_API}/namespaces/${namespace}/taskruns/`, {
+        headers: this.headers,
+        params: {
+          labelSelector: `tekton.dev/pipelineRun=${pipelineRun}`,
+        },
+      })
+      .pipe(
+        map((taskRuns: any) => {
+          return taskRuns?.items;
         }),
       );
   }
