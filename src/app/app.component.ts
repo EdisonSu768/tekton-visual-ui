@@ -130,6 +130,7 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
   initDiagram(): go.Diagram {
     const $ = go.GraphObject.make;
     const dia = $(go.Diagram, {
+      initialContentAlignment: go.Spot.Default,
       'undoManager.isEnabled': true,
       model: $(go.GraphLinksModel, {
         linkToPortIdProperty: 'toPort',
@@ -155,6 +156,8 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
     dia.nodeTemplate = $(
       go.Node,
       'Spot',
+      {},
+      new go.Binding('location', 'loc'),
       $(
         go.Panel,
         'Auto',
@@ -191,16 +194,17 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
 
   handleTasksToNodeData = (tasks: any[], taskRun: any[]): go.ObjectData[] => {
     const taskStep = tasks.map(task => task.name);
-    const diagramNodeData = taskRun?.map((task: any) => {
+    const taskRunSort = R.sortBy(
+      // @ts-ignore
+      R.pipe(R.prop('name'), R.indexOf(R.__, taskStep)),
+    )(taskRun);
+    this.diagramNodeData = taskRunSort?.map((task: any, index: number) => {
       return {
         key: task?.name,
         color: this.getColor(task?.status),
+        loc: new go.Point(index * 150, 200),
       };
     });
-    this.diagramNodeData = R.sortBy(
-      // @ts-ignore
-      R.pipe(R.prop('key'), R.indexOf(R.__, taskStep)),
-    )(diagramNodeData);
     this.cdr.markForCheck();
     this.skipsDiagramUpdate = false;
     console.log('NODE -->', this.diagramNodeData);
@@ -208,21 +212,23 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
   };
 
   handleTasksToLinkData = (tasks: any[], taskRun: any[]): go.ObjectData[] => {
-    this.diagramLinkData = taskRun?.map((run: any, index) => {
-      let obj = null;
-      tasks.forEach(task => {
-        if (task.name === run.name) {
-          obj = {
-            key: index,
-            from: first(task?.runAfter),
-            to: run?.name,
-            fromPort: 'r',
-            toPort: 'l',
-          };
-        }
-      });
-      return obj;
-    });
+    this.diagramLinkData = taskRun
+      ?.map((run: any, index) => {
+        let obj = null;
+        tasks.forEach(task => {
+          if (task.name === run.name && task.runAfter) {
+            obj = {
+              key: index,
+              from: first(task.runAfter),
+              to: run?.name,
+              fromPort: 'r',
+              toPort: 'l',
+            };
+          }
+        });
+        return obj;
+      })
+      .filter(t => t !== null);
     this.cdr.markForCheck();
     this.skipsDiagramUpdate = false;
     console.log('LINK -->', this.diagramLinkData);
